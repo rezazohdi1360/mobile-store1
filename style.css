@@ -1,0 +1,84 @@
+/* ============================================
+   استایل محصولات ناموجود
+   ============================================ */
+
+/* برچسب ناموجود روی کارت محصول */
+.badge-unavailable {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* کارت محصول ناموجود - کمی محو */
+.product-card.out-of-stock {
+    opacity: 0.75;
+    position: relative;
+}
+.product-card.out-of-stock:hover {
+    opacity: 0.9;
+}
+.product-card.out-of-stock .product-image img {
+    filter: grayscale(30%);
+}
+
+/* جعبه ناموجود در صفحه محصول */
+.out-of-stock-box {
+    background: #fef2f2;
+    border: 2px solid #fca5a5;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.out-of-stock-box .icon {
+    font-size: 24px;
+}
+.out-of-stock-box .text {
+    color: #991b1b;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+/* دکمه غیرفعال */
+.btn-disabled {
+    background: #e5e7eb !important;
+    color: #9ca3af !important;
+    cursor: not-allowed !important;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    width: 100%;
+    opacity: 0.8;
+}
+
+/* دکمه اطلاع از موجودی */
+.btn-notify {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 8px;
+    transition: all 0.2s;
+}
+.btn-notify:hover {
+    background: #fde68a;
+    transform: translateY(-1px);
+}

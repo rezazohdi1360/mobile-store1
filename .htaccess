@@ -1,0 +1,8 @@
+# افزایش محدودیت تعداد فیلدهای فرم (خطای: Input variables exceeded 1000)
+# فقط وقتی PHP به‌صورت ماژول Apache اجرا شود (مثل XAMPP) اعمال می‌شود؛ در غیر این صورت php.ini را تغییر دهید.
+<IfModule mod_php.c>
+    php_value max_input_vars 20000
+</IfModule>
+<IfModule mod_php8.c>
+    php_value max_input_vars 20000
+</IfModule>

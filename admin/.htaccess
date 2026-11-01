@@ -1,0 +1,17 @@
+# اجازه آپلود فایل‌های JSON حجیم (فقط وقتی PHP به‌صورت ماژول Apache اجرا شود، مثل XAMPP)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 1024M
+    php_value post_max_size 1024M
+    php_value memory_limit 2048M
+    php_value max_execution_time 600
+    php_value max_input_time 600
+    php_value max_input_vars 20000
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 1024M
+    php_value post_max_size 1024M
+    php_value memory_limit 2048M
+    php_value max_execution_time 600
+    php_value max_input_time 600
+    php_value max_input_vars 20000
+</IfModule>

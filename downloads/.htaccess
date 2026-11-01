@@ -1,0 +1,6 @@
+# دسترسی مستقیم به فایل‌های دانلودی ممنوع است؛ فقط از طریق download.php بعد از پرداخت
+Require all denied
+<IfModule !mod_authz_core.c>
+Order allow,deny
+Deny from all
+</IfModule>

@@ -72,7 +72,7 @@ require_once '../includes/header.php';
             <input type="text" name="enamad_url" dir="ltr" placeholder="https://trustseal.enamad.ir/?id=...&Code=..."
                    value="<?= sanitize(site_get($pdo, 'enamad_url', '')) ?>"
                    class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm">
-            <p class="text-[11px] text-slate-500 mt-2">تصویر نماد از فایل <code>icon/02.jpg</code> (یا <code>icon/04.*</code>) خوانده می‌شود. برای تغییر تصویر، فایل را در پوشه <code>icon</code> جایگزین کنید.</p>
+            <p class="text-[11px] text-slate-500 mt-2">تصویر نماد از پوشه <code>icon/enamad/</code> خوانده می‌شود: <code>01.*</code> پیش‌فرض است و اگر فایلی به نام <code>custom.*</code> بگذارید به‌جای آن نمایش داده می‌شود. برای تغییر تصویر، فایل را در همان پوشه جایگزین کنید.</p>
         </div>
 
         <div class="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-xl">

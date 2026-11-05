@@ -291,9 +291,9 @@ ul{list-style:none}
                         <?php endif; ?>
 
                         <a href="product.php?id=<?= (int)$p['id'] ?>" class="product-image">
-                            <img src="<?= htmlspecialchars($p['main_image'] ?: 'assets/no-image.png') ?>"
+                            <img src="<?= htmlspecialchars($p['main_image'] ?: 'icon/placeholder/no-image.png') ?>"
                                  alt="<?= htmlspecialchars($p['name']) ?>" loading="lazy"
-                                 onerror="this.onerror=null;this.src='assets/no-image.png'">
+                                 onerror="this.onerror=null;this.src='icon/placeholder/no-image.png'">
                         </a>
 
                         <div class="product-info">

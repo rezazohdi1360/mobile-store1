@@ -211,9 +211,9 @@ if ($productId > 0) {
 
             <?php if ($product): ?>
                 <div class="product-preview">
-                    <img src="<?= htmlspecialchars($product['main_image'] ?: 'assets/no-image.png') ?>" 
+                    <img src="<?= htmlspecialchars($product['main_image'] ?: 'icon/placeholder/no-image.png') ?>" 
                          alt=""
-                         onerror="this.src='assets/no-image.png'">
+                         onerror="this.src='icon/placeholder/no-image.png'">
                     <div class="name">
                         <?= htmlspecialchars(mb_substr($product['name'], 0, 80)) ?>
                     </div>

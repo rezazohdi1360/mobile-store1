@@ -69,7 +69,7 @@ require_once '../includes/header.php';
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         <?php foreach ($products as $p):
-            $img = $p['main_image'] ?: 'assets/no-image.png';
+            $img = $p['main_image'] ?: 'icon/placeholder/no-image.png';
             if (strpos($img, 'http') !== 0) $img = '../' . $img;
             $price = ($p['sale_price'] && $p['sale_price'] < $p['price']) ? $p['sale_price'] : $p['price']; ?>
             <label class="bg-white border <?= $p['featured'] ? 'border-amber-300 bg-amber-50' : 'border-slate-200' ?> rounded-2xl p-3 flex gap-3 items-center cursor-pointer hover:border-brand-orange">

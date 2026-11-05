@@ -60,7 +60,7 @@ function base_url() {
 }
 function img_url($p) {
     $p = trim((string)$p);
-    if ($p === '') $p = 'assets/no-image.png';
+    if ($p === '') $p = 'icon/placeholder/no-image.png';
     if (preg_match('#^https?://#i', $p)) return $p;
     $segs = array_map(fn($s) => rawurlencode(rawurldecode($s)), explode('/', ltrim($p, '/')));
     return base_url() . implode('/', $segs);

@@ -98,7 +98,7 @@ if (!empty($cart)) {
         $items[] = [
             'id' => $p['id'],
             'name' => $p['name'],
-            'image' => $p['main_image'] ?: 'assets/no-image.png',
+            'image' => $p['main_image'] ?: 'icon/placeholder/no-image.png',
             'unit_price' => $unitPrice,
             'unit_original' => $unitOriginal,
             'qty' => $qty,
@@ -301,7 +301,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
                 <div class="cart-item">
                     <a href="product.php?id=<?= (int)$item['id'] ?>">
                         <img src="<?= htmlspecialchars($item['image']) ?>" alt=""
-                             onerror="this.onerror=null;this.src='assets/no-image.png'">
+                             onerror="this.onerror=null;this.src='icon/placeholder/no-image.png'">
                     </a>
 
                     <div class="item-info">

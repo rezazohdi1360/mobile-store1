@@ -50,7 +50,7 @@ foreach ($dbProducts as $p) {
     $items[] = [
         'id' => $p['id'],
         'name' => $p['name'],
-        'image' => $p['main_image'] ?: 'assets/no-image.png',
+        'image' => $p['main_image'] ?: 'icon/placeholder/no-image.png',
         'unit_price' => $unitPrice,
         'qty' => $qty,
         'subtotal' => $lineTotal,
@@ -364,7 +364,7 @@ foreach ($provinces as $prov):
 <div class="summary-items">
 <?php foreach ($items as $it): ?>
 <div class="summary-item">
-<img src="<?= htmlspecialchars($it['image']) ?>" alt="" onerror="this.src='assets/no-image.png'">
+<img src="<?= htmlspecialchars($it['image']) ?>" alt="" onerror="this.src='icon/placeholder/no-image.png'">
 <div>
 <div class="name"><?= htmlspecialchars(mb_substr($it['name'], 0, 50)) ?></div>
 <div class="qty">تعداد: <?= $it['qty'] ?></div>

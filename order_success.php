@@ -189,7 +189,7 @@ h1{color:#16a34a;margin:0 0 15px 0;font-size:24px}
 <div class="items-list">
 <?php foreach ($orderItems as $it): ?>
 <div class="item">
-<img src="<?= htmlspecialchars($it['product_image'] ?: 'assets/no-image.png') ?>" alt="" onerror="this.src='assets/no-image.png'">
+<img src="<?= htmlspecialchars($it['product_image'] ?: 'icon/placeholder/no-image.png') ?>" alt="" onerror="this.src='icon/placeholder/no-image.png'">
 <div>
 <div class="name"><?= htmlspecialchars(mb_substr($it['product_name'], 0, 60)) ?></div>
 <div class="qty">تعداد: <?= $it['quantity'] ?> عدد × <?= number_format($it['unit_price']) ?> تومان</div>

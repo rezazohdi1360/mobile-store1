@@ -410,10 +410,10 @@ $cartCount = array_sum($_SESSION['cart'] ?? []);
                     <?php endif; ?>
 
                     <a href="product.php?id=<?= $p['id'] ?>" class="product-image">
-                        <img src="<?= htmlspecialchars($p['main_image'] ?: 'assets/no-image.png') ?>" 
+                        <img src="<?= htmlspecialchars($p['main_image'] ?: 'icon/placeholder/no-image.png') ?>" 
                              alt="<?= htmlspecialchars($p['name']) ?>"
                              loading="lazy"
-                             onerror="this.src='assets/no-image.png'">
+                             onerror="this.src='icon/placeholder/no-image.png'">
                     </a>
 
                     <div class="product-info">

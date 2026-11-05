@@ -14,7 +14,7 @@ $ft_has_product = !empty($footer_is_product_page) && isset($footer_product) && i
 if ($ft_has_product) {
     $ft_id        = (int)($footer_product['id'] ?? 0);
     $ft_title     = ($footer_product['title'] ?? '');
-    $ft_image     = $footer_product['image'] ?? 'assets/no-image.png';
+    $ft_image     = $footer_product['image'] ?? 'icon/placeholder/no-image.png';
     $ft_price     = (int)($footer_product['price'] ?? 0);
     $ft_old_price = (int)($footer_product['old_price'] ?? 0);
 }
@@ -160,7 +160,7 @@ if ($ft_has_product) {
     <div class="ft-sticky">
         <?php if ($ft_has_product): ?>
         <div class="ft-sticky-row">
-            <img src="<?= htmlspecialchars($ft_image) ?>" alt="" onerror="this.onerror=null;this.src='assets/no-image.png'">
+            <img src="<?= htmlspecialchars($ft_image) ?>" alt="" onerror="this.onerror=null;this.src='icon/placeholder/no-image.png'">
             <div class="ft-st-title"><?= htmlspecialchars($ft_title) ?></div>
             <div class="ft-st-price">
                 <?php if ($ft_old_price > $ft_price && $ft_price > 0): ?>

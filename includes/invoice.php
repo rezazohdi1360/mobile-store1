@@ -22,7 +22,7 @@ function inv_boot() {
     $tmp = sys_get_temp_dir() . '/';
     foreach ([
         'K_TCPDF_EXTERNAL_CONFIG' => true, 'K_PATH_MAIN' => dirname(__DIR__) . '/lib/tcpdf/', 'K_PATH_FONTS' => dirname(__DIR__) . '/lib/tcpdf/fonts/',
-        'K_PATH_URL' => '/', 'K_PATH_IMAGES' => dirname(__DIR__) . '/', 'K_BLANK_IMAGE' => dirname(__DIR__) . '/assets/no-image.png', 'K_PATH_CACHE' => $tmp,
+        'K_PATH_URL' => '/', 'K_PATH_IMAGES' => dirname(__DIR__) . '/', 'K_BLANK_IMAGE' => dirname(__DIR__) . '/icon/placeholder/no-image.png', 'K_PATH_CACHE' => $tmp,
         'K_PATH_URL_CACHE' => $tmp, 'PDF_PAGE_FORMAT' => 'A4', 'PDF_PAGE_ORIENTATION' => 'P', 'PDF_CREATOR' => 'Store', 'PDF_AUTHOR' => 'Store', 'PDF_UNIT' => 'mm',
         'PDF_MARGIN_HEADER' => 5, 'PDF_MARGIN_FOOTER' => 10, 'PDF_MARGIN_TOP' => 27, 'PDF_MARGIN_BOTTOM' => 25, 'PDF_MARGIN_LEFT' => 15, 'PDF_MARGIN_RIGHT' => 15,
         'PDF_FONT_NAME_MAIN' => 'helvetica', 'PDF_FONT_SIZE_MAIN' => 10, 'PDF_FONT_NAME_DATA' => 'helvetica', 'PDF_FONT_SIZE_DATA' => 8, 'PDF_FONT_MONOSPACED' => 'courier',
@@ -57,11 +57,11 @@ function inv_image($src) {
     if (!function_exists('imagecreatefromstring')) {
         // PHP بدون افزونه GD: عکس JPEG بدون تغییر استفاده می‌شود، در غیر این صورت تصویر پیش‌فرض
         if ($data && substr($data, 0, 2) === "\xFF\xD8" && strlen($data) < 600000) { file_put_contents($out, $data); return $out; }
-        $nf = $root . '/assets/no-image.jpg';
+        $nf = $root . '/icon/placeholder/no-image.jpg';
         return is_file($nf) ? $nf : null;
     }
     $im = $data ? @imagecreatefromstring($data) : false;
-    if (!$im) $im = @imagecreatefromstring((string)file_get_contents($root . '/assets/no-image.png'));
+    if (!$im) $im = @imagecreatefromstring((string)file_get_contents($root . '/icon/placeholder/no-image.png'));
     if (!$im) return null;
     $w = imagesx($im); $h = imagesy($im); $box = 160; $sc = min($box / max($w, 1), $box / max($h, 1), 1);
     $nw = max(1, (int)round($w * $sc)); $nh = max(1, (int)round($h * $sc));

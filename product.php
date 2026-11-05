@@ -84,7 +84,7 @@ if (empty($images) && !empty($product['main_image'])) {
     $images = [$product['main_image']];
 }
 if (empty($images)) {
-    $images = ['assets/no-image.png'];
+    $images = ['icon/placeholder/no-image.png'];
 }
 $mainImage = $product['main_image'] ?: $images[0];
 if (!in_array($mainImage, $images, true)) {
@@ -310,14 +310,14 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
                 <?php endif; ?>
                 <img id="mainImg" src="<?= htmlspecialchars($mainImage) ?>"
                      alt="<?= htmlspecialchars($product['name']) ?>"
-                     onerror="this.onerror=null;this.src='assets/no-image.png'">
+                     onerror="this.onerror=null;this.src='icon/placeholder/no-image.png'">
             </div>
             <?php if (count($images) > 1): ?>
             <div class="thumbs">
                 <?php foreach ($images as $i => $img): ?>
                 <div class="thumb <?= $img === $mainImage ? 'active' : '' ?>" data-src="<?= htmlspecialchars($img) ?>">
                     <img src="<?= htmlspecialchars($img) ?>" alt="" loading="lazy"
-                         onerror="this.onerror=null;this.src='assets/no-image.png'">
+                         onerror="this.onerror=null;this.src='icon/placeholder/no-image.png'">
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -472,8 +472,8 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
         ?>
         <article class="product-card <?= !$rAvail ? 'out-of-stock' : '' ?>">
             <a href="product.php?id=<?= (int)$r['id'] ?>" class="p-image">
-                <img src="<?= htmlspecialchars($r['main_image'] ?: 'assets/no-image.png') ?>" alt="" loading="lazy"
-                     onerror="this.onerror=null;this.src='assets/no-image.png'">
+                <img src="<?= htmlspecialchars($r['main_image'] ?: 'icon/placeholder/no-image.png') ?>" alt="" loading="lazy"
+                     onerror="this.onerror=null;this.src='icon/placeholder/no-image.png'">
             </a>
             <div class="p-info">
                 <a href="product.php?id=<?= (int)$r['id'] ?>" class="p-title"><?= htmlspecialchars(mb_substr($r['name'], 0, 70)) ?></a>

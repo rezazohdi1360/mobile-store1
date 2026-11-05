@@ -2,8 +2,7 @@
 /**
  * ایمپورت خودکار محصولات از پوشه‌ها
  *
- *   products/            ← فایل JSON هر محصول
- *   images/«نام محصول»/  ← 01.jpg (عکس اصلی) تا 05.jpg
+ *   MP/«نام محصول»/      ← هر محصول یک پوشه: فایل JSON محصول + عکس‌ها (01.jpg عکس اصلی تا 05.jpg)
  *
  * اجرا:  http://localhost/mobile-store/import.php            ← افزودن محصولات جدید + به‌روزرسانی موجودها
  *        http://localhost/mobile-store/import.php?mode=new     ← فقط محصولات جدید
@@ -64,16 +63,26 @@ if (!$cli) {
 
 logMsg("🚀 شروع ایمپورت خودکار (حالت: $mode)...");
 
-// ───── خواندن محصولات: اول پوشه products، در نبود آن products.json قدیمی ─────
+// ───── مهاجرت یک‌باره مسیر عکس‌های قدیمی (images/…) در دیتابیس به پوشه MP (بی‌خطر و تکرارپذیر) ─────
+// نام پوشه محصولات تغییری نکرده است؛ فقط ریشه‌ی مسیر از images/ به MP/ عوض شده.
+try {
+    $n1 = $pdo->exec("UPDATE products SET main_image = CONCAT('MP/', SUBSTRING(main_image, 8)) WHERE main_image LIKE 'images/%'");
+    $n2 = $pdo->exec("UPDATE products SET all_images = REPLACE(all_images, 'images/', 'MP/') WHERE all_images LIKE 'images/%'");
+    if ($n1 || $n2) logMsg("🔁 مسیر عکس محصولات قبلی به پوشه MP منتقل شد (عکس اصلی: " . (int)$n1 . " | همه عکس‌ها: " . (int)$n2 . ")");
+} catch (Exception $e) {
+    logMsg("⚠ مهاجرت مسیر عکس‌های قدیمی انجام نشد: " . htmlspecialchars($e->getMessage()));
+}
+
+// ───── خواندن محصولات: اول پوشه MP، در نبود آن products.json قدیمی ─────
 $errs = [];
 $items = pf_load_products($errs);
 foreach ($errs as $e) logMsg("⚠ $e");
 if (!$items && is_file(__DIR__ . '/products.json')) {
-    logMsg("ℹ پوشه products خالی است؛ از فایل products.json استفاده می‌شود.");
+    logMsg("ℹ پوشه MP خالی است؛ از فایل products.json استفاده می‌شود.");
     $items = pf_parse_json((string)file_get_contents(__DIR__ . '/products.json')) ?: [];
     foreach ($items as &$x) { $x['_images'] = []; $x['_dir'] = null; } unset($x);
 }
-if (!$items) die(($cli ? '' : '') . "❌ هیچ محصولی پیدا نشد. فایل‌های JSON را در پوشه products بگذارید.");
+if (!$items) die("❌ هیچ محصولی پیدا نشد. برای هر محصول یک پوشه (به اسم محصول) داخل MP بسازید و فایل JSON و عکس‌ها را داخل آن بگذارید.");
 
 $total = count($items);
 logMsg("✅ تعداد محصولات: <strong>$total</strong>");
@@ -100,7 +109,7 @@ foreach ($items as $i => $x) {
         $key = pf_key($x);
         $r = pf_row($x);
         if ($r['name'] === '') { $skipped++; continue; }
-        if (!$x['_images']) { $noImg++; logMsg("🖼 بدون پوشه عکس: " . htmlspecialchars($r['name'])); }
+        if (!$x['_images']) { $noImg++; logMsg("🖼 بدون عکس در پوشه MP: " . htmlspecialchars($r['name'])); }
 
         $find->execute([$key]);
         $pid = (int)$find->fetchColumn();

@@ -36,7 +36,7 @@ const SAMPLE_JSON = __DIR__ . '/data/sample_products.json';
 
 function sj_load() {
     $map = [];
-    foreach (pf_load_products($GLOBALS['pfErrors']) as $x) $map[sj_key($x)] = $x;         // منبع اصلی: پوشه products
+    foreach (pf_load_products($GLOBALS['pfErrors']) as $x) $map[sj_key($x)] = $x;         // منبع اصلی: پوشه MP
     if (is_file(SAMPLE_JSON)) foreach (sj_parse(file_get_contents(SAMPLE_JSON)) ?: [] as $x) {
         $k = sj_key($x);
         if (!isset($map[$k])) $map[$k] = $x;                                                // فایل JSON قدیمی (آپلودی)
@@ -212,12 +212,12 @@ require_once '../includes/header.php';
         $noImg = array_filter($folderItems, fn($x) => empty($x['_images']));
     ?>
     <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-4 text-xs leading-7">
-        <div class="font-black text-sm mb-1">📂 منبع اصلی: پوشه‌های <span dir="ltr">products</span> و <span dir="ltr">images</span></div>
-        <div>فایل اطلاعات هر محصول (JSON) در <b dir="ltr">products/</b> ← عکس‌ها در <b dir="ltr">images/«نام محصول»/01.jpg … 05.jpg</b> (۰۱ = عکس اصلی)</div>
+        <div class="font-black text-sm mb-1">📂 منبع اصلی: پوشه <span dir="ltr">MP</span></div>
+        <div>هر محصول یک پوشه به اسم خودش دارد: <b dir="ltr">MP/«نام محصول»/</b> ← فایل JSON محصول + عکس‌ها <b dir="ltr">01.jpg … 05.jpg</b> (۰۱ = عکس اصلی)</div>
         <div class="mt-1">
             محصول در پوشه: <b><?= fa_digits(count($folderItems)) ?></b>
             • بدون پوشه عکس: <b class="<?= $noImg ? 'text-amber-600' : '' ?>"><?= fa_digits(count($noImg)) ?></b>
-            <?php if (!is_dir(PF_PRODUCTS_DIR)): ?> • <span class="text-red-600 font-bold">پوشه products پیدا نشد</span><?php endif; ?>
+            <?php if (!is_dir(PF_MP_DIR)): ?> • <span class="text-red-600 font-bold">پوشه MP پیدا نشد</span><?php endif; ?>
         </div>
         <?php foreach ($pfErrors as $e): ?><div class="text-red-600">• <?= sanitize($e) ?></div><?php endforeach; ?>
         <form method="post" class="mt-2" onsubmit="return confirm('اطلاعات و عکس محصولات موجود از روی پوشه‌ها به‌روزرسانی شود؟')">
@@ -245,7 +245,7 @@ require_once '../includes/header.php';
         </div>
 
         <?php if ($jsonItems): ?>
-        <h2 class="text-sm font-black text-slate-800 mb-2">📄 از پوشه products / فایل JSON (<?= $totalJson ?> محصول — صفحه <?= $pg ?> از <?= $pages ?>)</h2>
+        <h2 class="text-sm font-black text-slate-800 mb-2">📄 از پوشه MP / فایل JSON (<?= $totalJson ?> محصول — صفحه <?= $pg ?> از <?= $pages ?>)</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
         <?php foreach ($jsonPage as $x):
             $key = sj_key($x); $done = isset($existing[$key]);
@@ -262,7 +262,7 @@ require_once '../includes/header.php';
                     <span class="block text-xs font-black text-brand-orange mt-1"><?= $now ? number_format($now) . ' تومان' : 'بدون قیمت' ?></span>
                     <?php if (isset($x['_file'])): ?>
                         <span class="inline-block mt-1 text-[10px] <?= $x['_images'] ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700' ?> px-2 py-0.5 rounded-full font-bold">
-                            <?= $x['_images'] ? '🖼 ' . fa_digits(count($x['_images'])) . ' عکس' : '⚠ پوشه عکس پیدا نشد' ?></span>
+                            <?= $x['_images'] ? '🖼 ' . fa_digits(count($x['_images'])) . ' عکس' : '⚠ عکسی در پوشه محصول پیدا نشد' ?></span>
                     <?php endif; ?>
                     <?php if ($done): ?><span class="inline-block mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">✅ اضافه شده</span><?php endif; ?>
                 </span>

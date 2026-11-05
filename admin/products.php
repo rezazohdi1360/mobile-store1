@@ -129,7 +129,7 @@ require_once '../includes/header.php';
         </div>
         <div class="flex gap-2">
             <a href="index.php" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs">← داشبورد</a>
-            <a href="../import.php?mode=all" onclick="return confirm('محصولات پوشه products (و عکس‌های پوشه images) در ریشه‌ی برنامه خوانده شود؟\nمحصولات جدید اضافه و محصولات موجود به‌روزرسانی می‌شوند.')"
+            <a href="../import.php?mode=all" onclick="return confirm('محصولات پوشه MP (فایل JSON و عکس‌های هر محصول) در ریشه‌ی برنامه خوانده شود؟\nمحصولات جدید اضافه و محصولات موجود به‌روزرسانی می‌شوند.')"
                class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs" title="وارد کردن محصولات جدید و به‌روزرسانی موجودها از ریشه‌ی برنامه">🔄 به‌روزرسانی و ورود محصولات</a>
             <a href="product_add.php" class="bg-brand-orange hover:bg-brand-hover text-white font-bold px-4 py-2.5 rounded-xl text-xs">➕ افزودن محصول</a>
         </div>

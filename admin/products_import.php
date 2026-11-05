@@ -105,7 +105,7 @@ if (isset($_GET['editpanel'])) {
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 text-xs">
         <div class="font-black text-slate-800">🖼 منبع نمایش عکس محصولات</div>
         <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="img_source" value="keep" checked> بدون تغییر</label>
-        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="img_source" value="folder"> عکس از <b>پوشه images</b> <span class="text-slate-400">(<?= pim_fa($nFolder) ?> محصول دارای عکس در پوشه)</span></label>
+        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="img_source" value="folder"> عکس از <b>پوشه MP</b> <span class="text-slate-400">(<?= pim_fa($nFolder) ?> محصول دارای عکس در پوشه)</span></label>
         <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="img_source" value="url"> عکس از <b>آدرس عکس داخل فایل JSON</b> <span class="text-slate-400">(<?= pim_fa($nUrl) ?> محصول دارای آدرس)</span></label>
         <?php if ($nNone): ?><div class="text-amber-600"><?= pim_fa($nNone) ?> محصول فایل JSON مرجع ندارد (دستی افزوده شده) و تغییر منبع روی آن‌ها اعمال نمی‌شود.</div><?php endif; ?>
         <div class="text-slate-400">اگر تیک «عکس‌ها» در پایین برداشته شود، عکس همه خالی می‌شود و منبع بالا نادیده گرفته می‌شود.</div>

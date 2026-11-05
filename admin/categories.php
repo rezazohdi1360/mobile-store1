@@ -12,6 +12,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add'])) {
     redirect('categories.php');
 }
 
+// حذف همه‌ی دسته‌بندی‌ها (فقط با POST). محصولات حذف نمی‌شوند؛ دسته‌ی آن‌ها خالی می‌شود (ON DELETE SET NULL)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all'])) {
+    $n = (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+    $pdo->exec("DELETE FROM categories");
+    setFlash('success', $n ? "همه‌ی دسته‌بندی‌ها حذف شد ($n مورد)" : 'دسته‌بندی‌ای برای حذف وجود نداشت');
+    redirect('categories.php');
+}
+
 if (isset($_GET['delete'])) {
     $pdo->prepare("DELETE FROM categories WHERE id=?")->execute([(int)$_GET['delete']]);
     setFlash('success', 'دسته‌بندی حذف شد');
@@ -33,7 +41,14 @@ require_once '../includes/header.php';
             <span class="w-2 h-7 bg-brand-orange rounded-full"></span>
             📁 مدیریت دسته‌بندی‌ها
         </h1>
-        <a href="index.php" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs">← داشبورد</a>
+        <div class="flex items-center gap-2">
+            <?php if ($cats): ?>
+            <form method="post" class="m-0" onsubmit="return confirm('همه‌ی <?= count($cats) ?> دسته‌بندی حذف شود؟\nمحصولات حذف نمی‌شوند، فقط بدون دسته‌بندی می‌شوند.\nاین کار قابل بازگشت نیست.')">
+                <button name="delete_all" value="1" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs">🗑 حذف همه دسته‌بندی‌ها</button>
+            </form>
+            <?php endif; ?>
+            <a href="index.php" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs">← داشبورد</a>
+        </div>
     </div>
 
     <form method="post" class="bg-white border border-slate-200 rounded-2xl p-5 mb-5 flex gap-2">

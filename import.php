@@ -80,12 +80,12 @@ logMsg(is_dir(PF_MP_DIR)
     ? "📂 پوشه محصولات: <code dir=\"ltr\">" . htmlspecialchars(PF_MP_WEB) . "</code> — " . count(pf_product_dirs()) . " پوشه‌ی دارای JSON، " . count($items) . " محصول"
     : "❌ پوشه MP کنار این فایل پیدا نشد (مسیر جست‌وجو: <code dir=\"ltr\">" . htmlspecialchars(PF_MP_DIR) . "</code>)");
 foreach ($errs as $e) logMsg("⚠ " . htmlspecialchars($e));
-if (!$items && is_file(__DIR__ . '/products.json')) {
-    logMsg("ℹ پوشه MP خالی است؛ از فایل products.json استفاده می‌شود.");
+if (!$items && !pf_product_dirs() && is_file(__DIR__ . '/products.json')) {
+    logMsg("ℹ در پوشه MP هیچ فایل JSON نیست؛ از فایل products.json استفاده می‌شود.");
     $items = pf_parse_json((string)file_get_contents(__DIR__ . '/products.json')) ?: [];
     foreach ($items as &$x) { $x['_images'] = []; $x['_dir'] = null; } unset($x);
 }
-if (!$items) die("❌ هیچ محصولی پیدا نشد. برای هر محصول یک پوشه (به اسم محصول) داخل MP بسازید و فایل JSON و عکس‌ها را داخل آن بگذارید.");
+if (!$items) die("❌ هیچ محصولی خوانده نشد. " . (pf_product_dirs() ? "پوشه‌های JSON هستند ولی محتوایشان محصول معتبر نیست؛ هشدارهای بالا را ببینید." : "برای هر محصول یک پوشه (به اسم محصول) داخل MP بسازید و فایل JSON و عکس‌ها را داخل آن بگذارید."));
 
 $total = count($items);
 logMsg("✅ تعداد محصولات: <strong>$total</strong>");

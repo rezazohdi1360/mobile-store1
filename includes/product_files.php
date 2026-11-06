@@ -94,13 +94,90 @@ function pf_json_files($rel) {
     return array_values($out);
 }
 
+/** آرایه‌ی لیستی (کلیدهای 0..n-1)؛ array_is_list فقط از PHP 8.1 هست */
+function pf_is_list($a) { return is_array($a) && ($a === [] || array_keys($a) === range(0, count($a) - 1)); }
+
+/** نرمال‌سازی نام کلید برای مقایسه: فاصله/نیم‌فاصله/NBSP، ی و ک عربی، حروف بزرگ، «_» و «-» */
+function pf_nk($k) {
+    $k = strtr((string)$k, ['ي' => 'ی', 'ك' => 'ک', 'ۀ' => 'ه', 'ة' => 'ه']);
+    return preg_replace('/[\s\x{a0}\x{200c}\x{200d}\x{200e}\x{200f}_\-]+/u', '', mb_strtolower($k, 'UTF-8'));
+}
+
+/** کلیدهای استاندارد فایل محصول (همان‌هایی که pf_row می‌خواند) */
+function pf_canonical_keys() {
+    static $map = null;
+    if ($map !== null) return $map;
+    $map = [];
+    foreach (['شناسه', 'نام محصول', 'نام لاتین', 'برند', 'دسته‌بندی', 'قیمت (تومان)', 'قیمت قبل از تخفیف (تومان)', 'درصد تخفیف',
+              'وضعیت موجودی', 'امتیاز', 'تعداد نظرات', 'گارانتی', 'فروشنده', 'آدرس وب', 'آدرس عکس اصلی', 'همه تصاویر',
+              'بررسی تخصصی', 'مشخصات فنی'] as $c) $map[pf_nk($c)] = $c;
+    return $map;
+}
+
+/** نام‌های جایگزین برای «نام محصول» (به ترتیب اولویت) */
+const PF_NAME_ALIASES = ['نام', 'عنوان', 'نام کالا', 'عنوان محصول', 'عنوان کالا', 'نام فارسی', 'title', 'name', 'product_name', 'product name', 'product_title'];
+
+/** یک آیتم را به کلیدهای استاندارد برمی‌گرداند؛ اگر نام محصول نداشته باشد null */
+function pf_canon_item($x) {
+    if (!is_array($x) || pf_is_list($x)) return null;
+    $map = pf_canonical_keys();
+    $out = $x;
+    foreach ($x as $k => $v) {
+        $n = pf_nk($k);
+        if (isset($map[$n]) && !array_key_exists($map[$n], $out)) $out[$map[$n]] = $v;
+    }
+    if (trim((string)($out['نام محصول'] ?? '')) === '') {
+        $names = [];
+        foreach ($x as $k => $v) $names[pf_nk($k)] = $v;
+        foreach (PF_NAME_ALIASES as $al) {
+            $v = $names[pf_nk($al)] ?? null;
+            if (is_scalar($v) && trim((string)$v) !== '') { $out['نام محصول'] = trim((string)$v); break; }
+        }
+    }
+    return trim((string)($out['نام محصول'] ?? '')) === '' ? null : $out;
+}
+
+/** آیتم‌های محصول را از هر ساختاری پیدا می‌کند: یک شیء، لیست، یا پوشش‌هایی مثل {"products":[...]} (تا ۳ سطح) */
+function pf_extract_items($d, $depth = 0) {
+    if (!is_array($d) || $depth > 3) return [];
+    if (!pf_is_list($d)) {
+        if (($c = pf_canon_item($d)) !== null) return [$c];
+    } else {
+        $items = [];
+        foreach ($d as $x) if (($c = pf_canon_item($x)) !== null) $items[] = $c;
+        if ($items) return $items;
+    }
+    foreach ($d as $v) {
+        if (is_array($v) && ($r = pf_extract_items($v, $depth + 1))) return $r;
+    }
+    return [];
+}
+
+/** متن خام فایل ← UTF-8 (BOM، UTF-16 ویندوز، یا CP1256) */
+function pf_decode_text($raw) {
+    if (strncmp($raw, "\xFF\xFE", 2) === 0) return mb_convert_encoding(substr($raw, 2), 'UTF-8', 'UTF-16LE');
+    if (strncmp($raw, "\xFE\xFF", 2) === 0) return mb_convert_encoding(substr($raw, 2), 'UTF-8', 'UTF-16BE');
+    $raw = preg_replace('/^\xEF\xBB\xBF/', '', $raw);
+    if (!mb_check_encoding($raw, 'UTF-8')) $raw = mb_convert_encoding($raw, 'UTF-8', 'Windows-1256');
+    return $raw;
+}
+
+/** null = JSON معتبر نیست؛ [] = معتبر ولی محصولی در آن پیدا نشد؛ وگرنه فهرست محصولات */
 function pf_parse_json($raw) {
-    $raw = preg_replace('/^\xEF\xBB\xBF/', '', trim($raw));
+    $raw = trim(pf_decode_text((string)$raw));
     $raw = preg_replace('/,\s*([\]}])/', '$1', $raw);
     $d = json_decode($raw, true);
     if (!is_array($d)) return null;
-    if (isset($d['نام محصول'])) $d = [$d];
-    return array_values(array_filter($d, fn($x) => is_array($x) && trim($x['نام محصول'] ?? '') !== ''));
+    return pf_extract_items($d);
+}
+
+/** برای پیام خطا: کلیدهای سطح اول فایل (چند تای اول) */
+function pf_keys_hint($raw) {
+    $d = json_decode(preg_replace('/,\s*([\]}])/', '$1', trim(pf_decode_text((string)$raw))), true);
+    if (is_array($d) && pf_is_list($d)) $d = $d[0] ?? [];
+    if (!is_array($d)) return '(ساختار ناشناخته)';
+    $ks = array_slice(array_keys($d), 0, 12);
+    return implode(' ، ', array_map(fn($k) => '«' . $k . '»', $ks)) . (count($d) > 12 ? ' …' : '');
 }
 
 function pf_key(array $x) { return trim($x['شناسه'] ?? '') ?: 'json-' . substr(md5($x['نام محصول']), 0, 10); }
@@ -112,12 +189,19 @@ function pf_key(array $x) { return trim($x['شناسه'] ?? '') ?: 'json-' . sub
 function pf_load_products(&$errors = []) {
     $errors = [];
     $items = [];
+    $hints = 0;
     foreach (pf_product_dirs() as $dir) {
         $images = $dir === '' ? null : pf_images($dir);   // عکس‌ها از همان پوشه‌ی محصول
         foreach (pf_json_files($dir) as $fname) {
             $label = ($dir === '' ? '' : $dir . '/') . $fname;
-            $list = pf_parse_json((string)file_get_contents(PF_MP_DIR . '/' . $label));
-            if ($list === null) { $errors[] = "$label: فایل JSON معتبر نیست یا کلید «نام محصول» ندارد"; continue; }
+            $raw  = (string)file_get_contents(PF_MP_DIR . '/' . $label);
+            $list = pf_parse_json($raw);
+            if ($list === null) { $errors[] = "$label: فایل JSON معتبر نیست"; continue; }
+            if (!$list) {
+                if ($hints++ < 3) $errors[] = "$label: JSON خوانده شد ولی «نام محصول» پیدا نشد. کلیدهای فایل: " . pf_keys_hint($raw);
+                else $errors['more'] = "… و فایل‌های مشابه دیگر (فقط ۳ نمونه نشان داده می‌شود)";
+                continue;
+            }
             $stem = pathinfo($fname, PATHINFO_FILENAME);
             // JSON مستقیم داخل MP: عکس‌ها فقط از پوشه‌ای هم‌نام فایل خوانده می‌شود (اگر باشد)
             $imgs = $images ?? (is_dir(PF_MP_DIR . '/' . $stem) ? pf_images($stem) : []);

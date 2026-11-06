@@ -66,8 +66,8 @@ logMsg("🚀 شروع ایمپورت خودکار (حالت: $mode)...");
 // ───── مهاجرت یک‌باره مسیر عکس‌های قدیمی (images/…) در دیتابیس به پوشه MP (بی‌خطر و تکرارپذیر) ─────
 // نام پوشه محصولات تغییری نکرده است؛ فقط ریشه‌ی مسیر از images/ به MP/ عوض شده.
 try {
-    $n1 = $pdo->exec("UPDATE products SET main_image = CONCAT('MP/', SUBSTRING(main_image, 8)) WHERE main_image LIKE 'images/%'");
-    $n2 = $pdo->exec("UPDATE products SET all_images = REPLACE(all_images, 'images/', 'MP/') WHERE all_images LIKE 'images/%'");
+    $n1 = $pdo->exec("UPDATE products SET main_image = CONCAT(" . $pdo->quote(PF_MP_WEB . '/') . ", SUBSTRING(main_image, 8)) WHERE main_image LIKE 'images/%'");
+    $n2 = $pdo->exec("UPDATE products SET all_images = REPLACE(all_images, 'images/', " . $pdo->quote(PF_MP_WEB . '/') . ") WHERE all_images LIKE 'images/%'");
     if ($n1 || $n2) logMsg("🔁 مسیر عکس محصولات قبلی به پوشه MP منتقل شد (عکس اصلی: " . (int)$n1 . " | همه عکس‌ها: " . (int)$n2 . ")");
 } catch (Exception $e) {
     logMsg("⚠ مهاجرت مسیر عکس‌های قدیمی انجام نشد: " . htmlspecialchars($e->getMessage()));
@@ -76,7 +76,10 @@ try {
 // ───── خواندن محصولات: اول پوشه MP، در نبود آن products.json قدیمی ─────
 $errs = [];
 $items = pf_load_products($errs);
-foreach ($errs as $e) logMsg("⚠ $e");
+logMsg(is_dir(PF_MP_DIR)
+    ? "📂 پوشه محصولات: <code dir=\"ltr\">" . htmlspecialchars(PF_MP_WEB) . "</code> — " . count(pf_product_dirs()) . " پوشه‌ی دارای JSON، " . count($items) . " محصول"
+    : "❌ پوشه MP کنار این فایل پیدا نشد (مسیر جست‌وجو: <code dir=\"ltr\">" . htmlspecialchars(PF_MP_DIR) . "</code>)");
+foreach ($errs as $e) logMsg("⚠ " . htmlspecialchars($e));
 if (!$items && is_file(__DIR__ . '/products.json')) {
     logMsg("ℹ پوشه MP خالی است؛ از فایل products.json استفاده می‌شود.");
     $items = pf_parse_json((string)file_get_contents(__DIR__ . '/products.json')) ?: [];

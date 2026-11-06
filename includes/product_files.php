@@ -9,50 +9,89 @@
  *
  * فایل JSON و عکس‌های هر محصول کنار هم، داخل همان پوشه‌اند؛ پس عکس هر محصول
  * مستقیم از پوشه‌ی خودش خوانده می‌شود و نیازی به تطبیق نام نیست.
+ * پوشه‌ی MP بدون حساسیت به حروف پیدا می‌شود، پوشه‌ها می‌توانند تو در تو باشند، و عکس‌ها اگر 01..05 نبودند با هر اسمی خوانده می‌شوند.
  */
-define('PF_MP_DIR', realpath(__DIR__ . '/..') . '/MP');
-const PF_MP_WEB = 'MP';                           // پیشوند مسیر وب عکس‌ها (حروف بزرگ؛ روی لینوکس حساس به حروف است)
+/** پوشه‌ی MP را بدون حساسیت به حروف پیدا می‌کند (MP / mp / Mp ...) چون روی هاست لینوکس این‌ها سه پوشه‌ی جدا هستند */
+function pf_resolve_mp() {
+    $root = realpath(__DIR__ . '/..');
+    if (is_dir("$root/MP")) return ['MP', "$root/MP"];
+    foreach (scandir($root) as $d) {
+        if ($d[0] !== '.' && strcasecmp($d, 'MP') === 0 && is_dir("$root/$d")) return [$d, "$root/$d"];
+    }
+    return ['MP', "$root/MP"];                         // وجود ندارد؛ نام پیش‌فرض
+}
+[$__mpName, $__mpPath] = pf_resolve_mp();
+define('PF_MP_DIR', $__mpPath);
+define('PF_MP_WEB', $__mpName);                        // پیشوند مسیر وب عکس‌ها = نام واقعی پوشه روی سرور
+unset($__mpName, $__mpPath);
 const PF_MAX_IMAGES = 5;
-const PF_EXTS = ['jpg', 'jpeg', 'png', 'webp'];   // jpg اولویت دارد
+const PF_EXTS = ['jpg', 'jpeg', 'png', 'webp'];       // jpg اولویت دارد
 
-/** نام پوشه‌های محصول داخل MP (مرتب‌شده) */
+/**
+ * پوشه‌های محصول داخل MP، در هر عمقی: هر پوشه‌ای که خودش فایل .json داشته باشد یک محصول است.
+ * خروجی: مسیر نسبی نسبت به MP (مثلاً «نام محصول» یا «دسته/نام محصول»). '' یعنی خود MP (فایل JSON مستقیم داخل MP).
+ */
 function pf_product_dirs() {
     $out = [];
     if (!is_dir(PF_MP_DIR)) return $out;
-    foreach (scandir(PF_MP_DIR) as $d) {
-        if ($d === '.' || $d === '..' || !is_dir(PF_MP_DIR . '/' . $d)) continue;
-        $out[] = $d;
-    }
-    sort($out, SORT_NATURAL);
+    $walk = function ($rel) use (&$walk, &$out) {
+        $abs = PF_MP_DIR . ($rel === '' ? '' : '/' . $rel);
+        $names = @scandir($abs) ?: [];
+        $hasJson = false; $sub = [];
+        foreach ($names as $n) {
+            if ($n === '.' || $n === '..' || $n[0] === '.') continue;
+            if (is_dir("$abs/$n")) $sub[] = $n;
+            elseif (strtolower(pathinfo($n, PATHINFO_EXTENSION)) === 'json') $hasJson = true;
+        }
+        if ($hasJson) $out[] = $rel;
+        natcasesort($sub);
+        foreach ($sub as $n) $walk($rel === '' ? $n : "$rel/$n");
+    };
+    $walk('');
     return $out;
 }
 
-/** عکس‌های 01 تا 05 یک پوشه‌ی محصول؛ خروجی: مسیرهای نسبی کدگذاری‌شده برای وب (MP/<نام محصول>/01.jpg) */
-function pf_images($dirName) {
+/** مسیر وب هر بخش کدگذاری می‌شود؛ فقط نویسه‌هایی که در آدرس مشکل می‌سازند (فارسی و فاصله همان‌طور می‌مانند تا ستون دیتابیس کوتاه بماند) */
+function pf_web_path($rel, $file) {
+    $enc = implode('/', array_map(fn($s) => strtr($s, ['%' => '%25', '#' => '%23', '?' => '%3F', ',' => '%2C']), explode('/', $rel)));
+    return PF_MP_WEB . '/' . ($rel === '' ? '' : $enc . '/') . strtr($file, ['%' => '%25', '#' => '%23', '?' => '%3F', ',' => '%2C']);
+}
+
+/**
+ * عکس‌های یک پوشه‌ی محصول (حداکثر ۵): اول 01 تا 05 (jpg/jpeg/png/webp)؛
+ * اگر هیچ‌کدام نبود، هر عکس دیگری که با هر اسمی در پوشه باشد (مرتب‌شده).
+ */
+function pf_images($rel) {
     $out = [];
-    $base = PF_MP_DIR . '/' . $dirName;
-    // فقط نویسه‌هایی که در آدرس وب مشکل می‌سازند کدگذاری می‌شوند (فارسی و فاصله همان‌طور می‌مانند تا ستون دیتابیس کوتاه بماند)
-    $enc = strtr($dirName, ['%' => '%25', '#' => '%23', '?' => '%3F', ',' => '%2C']);
+    $base = PF_MP_DIR . ($rel === '' ? '' : '/' . $rel);
     for ($i = 1; $i <= PF_MAX_IMAGES; $i++) {
         $num = sprintf('%02d', $i);
         foreach (PF_EXTS as $ext) {
             foreach ([$ext, strtoupper($ext)] as $e) {
-                if (is_file("$base/$num.$e")) { $out[] = PF_MP_WEB . '/' . $enc . "/$num.$e"; continue 3; }
+                if (is_file("$base/$num.$e")) { $out[] = pf_web_path($rel, "$num.$e"); continue 3; }
             }
         }
+    }
+    if (!$out && is_dir($base)) {
+        $all = [];
+        foreach (scandir($base) as $f) {
+            if ($f[0] !== '.' && is_file("$base/$f") && in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), PF_EXTS, true)) $all[] = $f;
+        }
+        natcasesort($all);
+        foreach (array_slice(array_values($all), 0, PF_MAX_IMAGES) as $f) $out[] = pf_web_path($rel, $f);
     }
     return $out;
 }
 
 /** فایل‌های .json داخل پوشه‌ی یک محصول (بدون glob تا نویسه‌هایی مثل [ ] در نام پوشه مشکل نسازند) */
-function pf_json_files($dirName) {
+function pf_json_files($rel) {
     $out = [];
-    $base = PF_MP_DIR . '/' . $dirName;
+    $base = PF_MP_DIR . ($rel === '' ? '' : '/' . $rel);
     foreach (scandir($base) as $f) {
-        if (strtolower(pathinfo($f, PATHINFO_EXTENSION)) === 'json' && is_file("$base/$f")) $out[] = $f;
+        if ($f[0] !== '.' && strtolower(pathinfo($f, PATHINFO_EXTENSION)) === 'json' && is_file("$base/$f")) $out[] = $f;
     }
-    sort($out, SORT_NATURAL);
-    return $out;
+    natcasesort($out);
+    return array_values($out);
 }
 
 function pf_parse_json($raw) {
@@ -74,17 +113,19 @@ function pf_load_products(&$errors = []) {
     $errors = [];
     $items = [];
     foreach (pf_product_dirs() as $dir) {
-        $images = pf_images($dir);                       // عکس‌ها از همان پوشه‌ی محصول
-        $files = pf_json_files($dir);
-        if (!$files) { $errors[] = "$dir: فایل JSON در پوشه محصول پیدا نشد"; continue; }
-        foreach ($files as $fname) {
-            $list = pf_parse_json((string)file_get_contents(PF_MP_DIR . '/' . $dir . '/' . $fname));
-            if ($list === null) { $errors[] = "$dir/$fname: فایل JSON معتبر نیست"; continue; }
+        $images = $dir === '' ? null : pf_images($dir);   // عکس‌ها از همان پوشه‌ی محصول
+        foreach (pf_json_files($dir) as $fname) {
+            $label = ($dir === '' ? '' : $dir . '/') . $fname;
+            $list = pf_parse_json((string)file_get_contents(PF_MP_DIR . '/' . $label));
+            if ($list === null) { $errors[] = "$label: فایل JSON معتبر نیست یا کلید «نام محصول» ندارد"; continue; }
+            $stem = pathinfo($fname, PATHINFO_FILENAME);
+            // JSON مستقیم داخل MP: عکس‌ها فقط از پوشه‌ای هم‌نام فایل خوانده می‌شود (اگر باشد)
+            $imgs = $images ?? (is_dir(PF_MP_DIR . '/' . $stem) ? pf_images($stem) : []);
             foreach ($list as $x) {
-                if (trim($x['شناسه'] ?? '') === '') $x['شناسه'] = pathinfo($fname, PATHINFO_FILENAME);   // نام فایل = شناسه
+                if (trim($x['شناسه'] ?? '') === '') $x['شناسه'] = $stem;   // نام فایل = شناسه
                 $x['_file']   = $fname;
                 $x['_dir']    = $dir;
-                $x['_images'] = $images;
+                $x['_images'] = $imgs;
                 $items[] = $x;
             }
         }

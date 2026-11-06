@@ -117,6 +117,48 @@ function pf_canonical_keys() {
 /** نام‌های جایگزین برای «نام محصول» (به ترتیب اولویت) */
 const PF_NAME_ALIASES = ['نام', 'عنوان', 'نام کالا', 'عنوان محصول', 'عنوان کالا', 'نام فارسی', 'title', 'name', 'product_name', 'product name', 'product_title'];
 
+/**
+ * فایل‌های محصول با کلیدهای انگلیسی (id, title, price_toman, rrp_toman, available, specs ...) را
+ * به کلیدهای فارسی استاندارد تبدیل می‌کند تا pf_row یکسان کار کند. فقط جاهای خالی پر می‌شوند.
+ */
+function pf_from_english(array $x, array $out) {
+    $g = [];
+    foreach ($x as $k => $v) $g[pf_nk($k)] = $v;
+    $put = function ($pk, $v) use (&$out) {
+        if (is_array($v) || is_bool($v) || $v === null) return;
+        if (trim((string)($out[$pk] ?? '')) === '' && trim((string)$v) !== '') $out[$pk] = is_string($v) ? trim($v) : $v;
+    };
+    foreach (['id' => 'شناسه', 'title' => 'نام محصول', 'titleen' => 'نام لاتین', 'brand' => 'برند', 'category' => 'دسته‌بندی',
+              'pricetoman' => 'قیمت (تومان)', 'rrptoman' => 'قیمت قبل از تخفیف (تومان)', 'discountpercent' => 'درصد تخفیف',
+              'rating' => 'امتیاز', 'ratingcount' => 'تعداد نظرات', 'seller' => 'فروشنده', 'url' => 'آدرس وب',
+              'warranty' => 'گارانتی', 'description' => 'بررسی تخصصی', 'desc' => 'بررسی تخصصی'] as $ek => $pk) {
+        if (isset($g[$ek])) $put($pk, $g[$ek]);
+    }
+    // موجودی: available = true/false
+    if (array_key_exists('available', $g) && trim((string)($out['وضعیت موجودی'] ?? '')) === '') {
+        $b = filter_var($g['available'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        $out['وضعیت موجودی'] = $b === false ? 'out_of_stock' : 'in_stock';
+    }
+    // آدرس عکس‌های اینترنتی (فقط وقتی عکسی در پوشه محصول نباشد استفاده می‌شود)
+    if (isset($g['imageurls']) && is_array($g['imageurls'])) {
+        $urls = array_values(array_filter(array_map(fn($u) => is_string($u) ? trim($u) : '', $g['imageurls'])));
+        if ($urls) {
+            if (trim((string)($out['آدرس عکس اصلی'] ?? '')) === '') $out['آدرس عکس اصلی'] = $urls[0];
+            if (trim((string)($out['همه تصاویر'] ?? '')) === '') $out['همه تصاویر'] = implode(',', $urls);
+        }
+    }
+    // مشخصات: شیء {"کلید": "مقدار"} ← «مشخصه: کلید»؛ «سایر توضیحات» اگر توضیحی نباشد به‌عنوان توضیحات محصول
+    if (isset($g['specs']) && is_array($g['specs'])) {
+        foreach ($g['specs'] as $k => $v) {
+            if (!is_scalar($v) || trim((string)$v) === '') continue;
+            $k = trim((string)$k);
+            if (pf_nk($k) === pf_nk('سایر توضیحات') && trim((string)($out['بررسی تخصصی'] ?? '')) === '') { $out['بررسی تخصصی'] = trim((string)$v); continue; }
+            $out['مشخصه: ' . $k] = (string)$v;
+        }
+    }
+    return $out;
+}
+
 /** یک آیتم را به کلیدهای استاندارد برمی‌گرداند؛ اگر نام محصول نداشته باشد null */
 function pf_canon_item($x) {
     if (!is_array($x) || pf_is_list($x)) return null;
@@ -126,6 +168,7 @@ function pf_canon_item($x) {
         $n = pf_nk($k);
         if (isset($map[$n]) && !array_key_exists($map[$n], $out)) $out[$map[$n]] = $v;
     }
+    $out = pf_from_english($x, $out);
     if (trim((string)($out['نام محصول'] ?? '')) === '') {
         $names = [];
         foreach ($x as $k => $v) $names[pf_nk($k)] = $v;
